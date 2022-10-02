@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model events {
+  event_id            String    @id @db.VarChar(150)
+  event_name          String?   @db.VarChar(255)
+  event_start_time    DateTime? @db.Timestamp(6)
+  event_creation_date DateTime? @db.Timestamp(6)
+  event_duration      Int?
+  type_id             String?   @db.VarChar(150)
+  types               types?    @relation(fields: [type_id], references: [type_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model types {
+  type_id          String             @id @db.VarChar(150)
+  type_name        String?            @db.VarChar(255)
+  events           events[]
+  user_preferences user_preferences[]
+}
+
+model user_preferences {
+  user_pref_id String  @id @db.VarChar(150)
+  user_id      String? @db.VarChar(150)
+  type_id      String? @db.VarChar(150)
+  types        types?  @relation(fields: [type_id], references: [type_id], onDelete: NoAction, onUpdate: NoAction)
+  users        users?  @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model users {
+  user_id          String             @id @db.VarChar(150)
+  user_name        String?            @db.VarChar(255)
+  user_preferences user_preferences[]
+}
