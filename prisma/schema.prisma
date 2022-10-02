@@ -14,13 +14,15 @@ model events {
   event_creation_date DateTime? @db.Timestamp(6)
   event_duration      Int?
   type_id             String?   @db.VarChar(150)
-  types               types?    @relation(fields: [type_id], references: [type_id], onDelete: NoAction, onUpdate: NoAction)
+  types               types?    @relation(fields: [type_id], references: [type_id], onDelete: Cascade, onUpdate: NoAction, map: "delete_for_cas")
 }
 
 model types {
   type_id          String             @id @db.VarChar(150)
   type_name        String?            @db.VarChar(255)
+  types            types              @relation("typesTotypes", fields: [type_id], references: [type_id], onDelete: Cascade, onUpdate: NoAction, map: "delete_for_cas")
   events           events[]
+  other_types      types?             @relation("typesTotypes")
   user_preferences user_preferences[]
 }
 

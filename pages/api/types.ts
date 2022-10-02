@@ -45,26 +45,29 @@ export default async function bookingHandler(req: NextApiRequest, res: NextApiRe
         case 'GET':
             // Get data from your database
             if (!id) {
-
                 const result = getTypes().then(rest => {
                     res.status(200).json(rest)
                 })
             }
             if (id) {
-                res.status(200).json({
-                    'result': getTypeById(id as string)
-                });
+                const result = getTypeById(id as string).then(rest => {
+                    res.status(200).json(rest)
+                })
             }
+            break;
 
-            break
-        case 'PUT':
-            // Update or create data in your database
-            res.status(200).json({ id, name: name || `User ${id}` })
-            break
         case 'POST':
             const result = newTypeFunc(name as string).then(rest => {
-                res.status(200).json({ "result" : "success" })
+                res.status(200).json({ "result": "success" })
             })
+            break;
+
+        case 'DELETE':
+            if(id){
+                let result = deleteTypeById(id as string).then(rest => {
+                    res.status(200).json({"status" : "delete"});
+                })
+            }
             break;
 
         default:
