@@ -20,7 +20,20 @@ const getEventsByUserId = async (input_user_id: string) =>
 
   return result;
 }
-const newBookingFunc = async (inputEventName: string, inputCreatorID:string, inputEventStartTime: string, inputCreationDate: string, input_event_duration: string, input_type_id: string) => {
+
+const getEventsByCreatorId = async (input_creator_id : string) =>{
+  const result = await prisma.events.findMany({
+    where:{
+      creater_id : input_creator_id
+    },
+    include:{
+      users  :true,
+      types : true
+    }
+  })
+}
+const newBookingFunc = async (inputEventName: string, inputCreatorID:string, inputEventStartTime: string,  input_event_duration: string, input_type_id: string) => {
+  console.log("fadsfad" + inputCreatorID)
   const newEvent = await prisma.events.create({
     data: {
       event_id: uuidv4(),
@@ -76,12 +89,17 @@ const deleteBookingByIdFunc = async (input_id: string) => {
 export default async function bookingHandler(req: NextApiRequest, res: NextApiResponse) {
   const {
     query: { id, name, event_name, event_start_time, creatorId,
-      event_type_id, event_duration, event_creation_date, userjoineventid },
+      event_type_id, event_duration,  userjoineventid },
     method,
   } = req
 
   switch (method) {
     case 'GET':
+      if(creatorId){
+        getEventsByCreatorId(creatorId as string).then(rest => {
+          res.status(200).json(rest)
+        })
+      }
       if (!id)
         getBookingFunc().then(rest => {
           res.status(200).json({
@@ -107,7 +125,8 @@ export default async function bookingHandler(req: NextApiRequest, res: NextApiRe
       res.status(200).json({ id, name: name || `User ${id}` })
       break
     case 'POST':
-      newBookingFunc(creatorId as string, event_name as string, event_start_time as string, event_creation_date as string,
+      console.log("POST - ")
+      newBookingFunc(event_name as string, creatorId as string, event_start_time as string,
         event_duration as string, event_type_id as string).then(rest => {
           res.status(200).json(rest)
         })
