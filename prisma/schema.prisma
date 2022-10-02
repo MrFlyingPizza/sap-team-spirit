@@ -8,32 +8,49 @@ datasource db {
 }
 
 model events {
-  event_id            String    @id @db.VarChar(150)
-  event_name          String?   @db.VarChar(255)
-  event_start_time    DateTime? @db.Timestamp(6)
-  event_creation_date DateTime? @db.Timestamp(6)
+  event_id            String              @id @db.VarChar(150)
+  event_name          String?             @db.VarChar(255)
+  event_start_time    DateTime?           @db.Timestamp(6)
+  event_creation_date DateTime?           @db.Timestamp(6)
   event_duration      Int?
-  type_id             String?   @db.VarChar(150)
-  types               types?    @relation(fields: [type_id], references: [type_id], onDelete: NoAction, onUpdate: NoAction)
+  type_id             String?             @db.VarChar(150)
+  creater_id          String              @db.VarChar(150)
+  types               types?              @relation(fields: [type_id], references: [type_id], onDelete: Cascade, onUpdate: NoAction, map: "delete_for_cas")
+  users               users               @relation(fields: [creater_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "events_users_null_fk")
+  users_join_events   users_join_events[]
 }
 
 model types {
   type_id          String             @id @db.VarChar(150)
   type_name        String?            @db.VarChar(255)
+  types            types              @relation("typesTotypes", fields: [type_id], references: [type_id], onDelete: Cascade, onUpdate: NoAction, map: "delete_for_cas")
   events           events[]
+  other_types      types?             @relation("typesTotypes")
   user_preferences user_preferences[]
 }
 
 model user_preferences {
-  user_pref_id String  @id @db.VarChar(150)
-  user_id      String? @db.VarChar(150)
-  type_id      String? @db.VarChar(150)
-  types        types?  @relation(fields: [type_id], references: [type_id], onDelete: NoAction, onUpdate: NoAction)
-  users        users?  @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  user_id String @db.VarChar(150)
+  type_id String @db.VarChar(150)
+  types   types  @relation(fields: [type_id], references: [type_id], onDelete: NoAction, onUpdate: NoAction)
+  users   users  @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([type_id, user_id], map: "user_preferences_type_id_user_id_uindex")
 }
 
 model users {
-  user_id          String             @id @db.VarChar(150)
-  user_name        String?            @db.VarChar(255)
-  user_preferences user_preferences[]
+  user_id           String              @id @db.VarChar(150)
+  user_name         String?             @db.VarChar(255)
+  events            events[]
+  user_preferences  user_preferences[]
+  users_join_events users_join_events[]
+}
+
+model users_join_events {
+  user_id  String @db.VarChar(150)
+  event_id String @db.VarChar(150)
+  events   events @relation(fields: [event_id], references: [event_id], onDelete: Cascade, onUpdate: NoAction)
+  users    users  @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, event_id], map: "users_join_events_user_id_event_id_uindex")
 }

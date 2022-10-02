@@ -1,15 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { PrismaClient, users } from '@prisma/client'
-import { v4 as uuidv4 } from 'uuid';
+
 
 const prisma = new PrismaClient()
 
 
-const newUserFunc = async (typeName : string) => {
+const newUserFunc = async (typeName : string, user_id: string) => {
     const newUser = await prisma.users.create({
       data: {
         user_name : typeName,
-        user_id: uuidv4(),
+        user_id: user_id,
       },
     })
     return newUser
@@ -21,7 +21,13 @@ const getUserById = async (input_id: string) => {
         where: {
             user_id : input_id
         },
+        include : {
+            user_preferences : true,
+        }
+        
     })
+
+
     console.log(result?.user_name)
     return result
 }
@@ -53,11 +59,11 @@ export default async function userHandler(req: NextApiRequest, res: NextApiRespo
             res.status(200).json(users);
         }).catch(console.error);
     }
-        
+
       break
     case 'POST':
       // Update or create data in your database
-      let result = newUserFunc(name as string).then(rest => {
+      let result = newUserFunc(name as string, id as string).then(rest => {
         res.status(200).json({
             "status" : "inserted"
         })
