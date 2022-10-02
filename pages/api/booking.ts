@@ -43,6 +43,9 @@ const newBookingFunc = async (inputEventName: string, inputCreatorID: string, in
       event_duration: parseInt(input_event_duration),
       type_id: input_type_id
     },
+    include:{
+      users : true
+    }
   })
   return newEvent;
 }
@@ -87,7 +90,7 @@ const deleteBookingByIdFunc = async (input_id: string) => {
 
 export default async function bookingHandler(req: NextApiRequest, res: NextApiResponse) {
   const {
-    query: { id, name, event_name, event_start_time, creatorId,
+    query: { id, name, event_name, creatorId,event_start_time, 
       event_type_id, event_duration, userjoineventid },
     method,
   } = req
@@ -129,7 +132,8 @@ export default async function bookingHandler(req: NextApiRequest, res: NextApiRe
       res.status(200).json({ id, name: name || `User ${id}` })
       break
     case 'POST':
-      console.log("POST - ")
+      console.log("POST - Following \n")
+      console.log("Creator Id received: " + creatorId as string + "\n\n\n")
       newBookingFunc(event_name as string, creatorId as string, event_start_time as string,
         event_duration as string, event_type_id as string).then(rest => {
           res.status(200).json(rest)

@@ -4,11 +4,11 @@ import { v4 as uuidv4 } from 'uuid';
 
 const prisma = new PrismaClient()
 
-const newTypeFunc = async (typeName: string) => {
+const newTypeFunc = async (typeName: string, typeId: string) => {
     const newUser = await prisma.types.create({
         data: {
             type_name: typeName,
-            type_id: uuidv4(),
+            type_id: typeId,
         },
     })
     return newUser;
@@ -63,7 +63,7 @@ export default async function bookingHandler(req: NextApiRequest, res: NextApiRe
             res.status(200).json({ id, name: name || `User ${id}` })
             break
         case 'POST':
-            const result = newTypeFunc(name as string).then(rest => {
+            const result = newTypeFunc(name as string, id as string).then(rest => {
                 res.status(200).json({ "result" : "success" })
             })
             break;
