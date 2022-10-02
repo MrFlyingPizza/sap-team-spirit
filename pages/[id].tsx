@@ -47,13 +47,11 @@ const EventCard = ({name, interest, time}: EventCardProps) => {
     return (
         <Card sx={{minWidth: 100}}>
             <CardContent>
-                <Typography>
-                    {name}
-                    <PrimaryText>Is Interested In </PrimaryText>
-                    {interest}
-                    <PrimaryText>At </PrimaryText>
-                    {format(time, 'p')}
-                </Typography>
+                {name}
+                <PrimaryText>Is Interested In </PrimaryText>
+                {interest}
+                <PrimaryText>At </PrimaryText>
+                {format(time, 'p')}
             </CardContent>
         </Card>
     )
