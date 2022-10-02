@@ -104,7 +104,7 @@ const HomePage = () => {
 
     return (
         <Container>
-            <Typography>{id}</Typography>
+            <Typography sx={{color: "white"}}>{id}</Typography>
             <Box sx={{width: "100%"}}>
                 <Typography variant={"h6"} component={"h6"} sx={{width: "100%", fontSize: 48}}>
                     Sup Bot
