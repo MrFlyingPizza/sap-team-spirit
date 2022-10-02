@@ -51,9 +51,10 @@ export default async function bookingHandler(req: NextApiRequest, res: NextApiRe
                 })
             }
             if (id) {
-                res.status(200).json({
-                    'result': getTypeById(id as string)
-                });
+                getTypeById(id as string).then(rest => {
+                    res.status(200).json(rest)
+                })
+                
             }
 
             break
