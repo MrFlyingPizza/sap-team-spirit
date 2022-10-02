@@ -1,4 +1,4 @@
-import type { NextPage } from 'next'
+import type {NextPage} from 'next'
 import {styled, ThemeProvider} from "@mui/material/styles"
 import theme from "../theme/theme";
 import {
@@ -12,6 +12,7 @@ import {
 import {QueryClient, QueryClientProvider, useQuery} from "@tanstack/react-query";
 import axios from "axios";
 import {useRouter} from "next/router";
+import {format} from 'date-fns';
 
 type EventCardProps = {
     name: string,
@@ -23,25 +24,35 @@ type EventCardProps = {
 type Event = {
     event_id: string,
     event_name: string,
-    event_start_time: string,
+    event_start_time: Date,
     event_creation_date: Date,
     event_duration: number,
-    type_id: number
+    type_id: string,
+    creater_id: string,
+    types: {
+        type_id: string,
+        type_name: string
+    },
+    users: {
+        "user_id": string,
+        "user_name": string
+    }
 }
 
 const PrimaryText = styled(Typography)<TypographyProps>(({theme}) => ({
     color: theme.palette.primary.main
 }))
 
-const EventCard = ({name, interest, time, location}: EventCardProps) => {
+const EventCard = ({name, interest, time}: EventCardProps) => {
     return (
         <Card sx={{minWidth: 100}}>
             <CardContent>
                 <Typography>
-                    <PrimaryText>{name}</PrimaryText>
-                     is interested in
-                    <PrimaryText>{interest}</PrimaryText>
-                    at
+                    {name}
+                    <PrimaryText>Is Interested In </PrimaryText>
+                    {interest}
+                    <PrimaryText>At </PrimaryText>
+                    {format(time, 'p')}
                 </Typography>
             </CardContent>
         </Card>
@@ -56,17 +67,40 @@ const SectionText = styled(Typography)<TypographyProps>(({theme}) => ({
     component: "h1"
 }));
 
-const SectionContainer =styled(Box)<BoxProps>(({theme}) => ({
+const SectionContainer = styled(Box)<BoxProps>(({theme}) => ({
     "paddingBottom": 10,
     "minHeight": "40vh"
 }));
+
+type EventSectionProps = {
+    title: string,
+    events?: Event[]
+}
+const EventSection = ({title, events}: EventSectionProps) => {
+    return (
+        <SectionContainer>
+            <SectionText>{title}</SectionText>
+            <Grid container spacing={2}>
+                {
+                    events && events.map(({event_id, event_name, event_start_time, users: {user_name}}) =>
+                        <Grid item key={event_id}>
+                            <EventCard name={user_name} interest={event_name} time={new Date(event_start_time)}
+                                       location={"not implemented"}/>
+                        </Grid>)
+                    || <Box sx={{margin: 10}}><Typography>Nothing to show here :/</Typography></Box>
+                }
+            </Grid>
+        </SectionContainer>
+    )
+};
 
 const HomePage = () => {
 
     const router = useRouter();
     const {id} = router.query;
 
-    const {data: events} = useQuery(["events"], () => axios.get('/api/booking').then<Event[]>(res => res.data.rest))
+    const {data: events} = useQuery(["events"], () => axios.get('/api/booking').then<Event[]>(res => res.data.rest).catch<Event[]>())
+    const {data: joinedEvents} = useQuery(["joinedEvents"], () => axios.get('/api/booking', {params: {"userjoineventid": id}}).then<Event[]>(res => res.data.res).catch<Event[]>())
 
     return (
         <Container>
@@ -76,21 +110,10 @@ const HomePage = () => {
                     Sup Bot
                 </Typography>
             </Box>
-            <SectionContainer>
-                <SectionText>Join In On Someone Else!</SectionText>
-                <Grid container spacing={2}>
-                    {
-                        events && events.map(({event_id, event_name, event_start_time, event_duration}) =>
-                            <Grid item key={event_id} >
-                                <EventCard name={event_name} interest={"no"} time={new Date(event_start_time)} location={"not implemented"}/>
-                            </Grid>)
-                    }
-                </Grid>
-            </SectionContainer>
+
+            <EventSection title={"Join In On Someone Else!"} events={events}/>
             <Divider/>
-            <SectionContainer>
-                <SectionText>Interests That You Are Following</SectionText>
-            </SectionContainer>
+            <EventSection title={"Interests That You Are Following"} events={joinedEvents}/>
         </Container>
     )
 }
